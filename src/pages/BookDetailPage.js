@@ -4,14 +4,19 @@ import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import api from "../apiService";
 import { Container, Button, Box, Grid, Stack, Typography } from "@mui/material";
-
+import { useDispatch, useSelector } from "react-redux";
+import { setBook } from "../redux/book/slice";
+import { setLoading as setStoreLoading } from "../redux/common/slice";
 
 const BACKEND_API = process.env.REACT_APP_BACKEND_API;
 
 const BookDetailPage = () => {
-  const [loading, setLoading] = useState(false);
-  const [book, setBook] = useState(null);
-  const [addingBook, setAddingBook] = useState(false);
+  const dispatch = useDispatch();
+  const loading = useSelector((state) => state.common.loading);
+  const setLoading = (value) => dispatch(setStoreLoading(value));
+  const book = useSelector((state) => state.book.book);
+
+  const [addingBook, setAddingBook] = useState(null);
   const params = useParams();
   const bookId = params.id;
 
@@ -39,7 +44,7 @@ const BookDetailPage = () => {
       setLoading(true);
       try {
         const res = await api.get(`/books/${bookId}`);
-        setBook(res.data);
+        dispatch(setBook(res.data));
       } catch (error) {
         toast.error(error.message);
       }
@@ -51,11 +56,17 @@ const BookDetailPage = () => {
   return (
     <Container>
       {loading ? (
-        <Box sx={{ textAlign: "center", color: "primary.main" }} >
+        <Box sx={{ textAlign: "center", color: "primary.main" }}>
           <ClipLoader color="#inherit" size={150} loading={true} />
         </Box>
       ) : (
-        <Grid container spacing={2} p={4} mt={5} sx={{ border: "1px solid black" }}>
+        <Grid
+          container
+          spacing={2}
+          p={4}
+          mt={5}
+          sx={{ border: "1px solid black" }}
+        >
           <Grid item md={4}>
             {book && (
               <img
@@ -84,16 +95,19 @@ const BookDetailPage = () => {
                 <Typography variant="body1">
                   <strong>Language:</strong> {book.language}
                 </Typography>
-                <Button variant="outlined" sx={{ width: "fit-content" }} onClick={() => addToReadingList(book)}>
+                <Button
+                  variant="outlined"
+                  sx={{ width: "fit-content" }}
+                  onClick={() => addToReadingList(book)}
+                >
                   Add to Reading List
                 </Button>
               </Stack>
             )}
           </Grid>
         </Grid>
-      )
-      }
-    </Container >
+      )}
+    </Container>
   );
 };
 

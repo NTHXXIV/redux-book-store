@@ -1,66 +1,93 @@
 import React, { useState, useEffect } from "react";
-import { Container, Button, Box, Card, Stack, CardMedia, CardActionArea, Typography, CardContent } from "@mui/material";
+import {
+  Container,
+  Button,
+  Box,
+  Card,
+  Stack,
+  CardMedia,
+  CardActionArea,
+  Typography,
+  CardContent,
+} from "@mui/material";
 import { ClipLoader } from "react-spinners";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import api from "../apiService";
+import { useSelector, useDispatch } from "react-redux";
+import { setBooks } from "../redux/book/slice";
+import { setLoading as setStoreLoading } from "../redux/common/slice";
 
 const BACKEND_API = process.env.REACT_APP_BACKEND_API;
 
 const ReadingPage = () => {
-  const [books, setBooks] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [removedBookId, setRemovedBookId] = useState("");
-  const navigate = useNavigate()
+  const dispatch = useDispatch();
+
+  const books = useSelector((state) => state.book.books);
+  const loading = useSelector((state) => state.common.loading);
+  const setLoading = (value) => dispatch(setStoreLoading(value));
+
+  // const pageNum = useSelector((state) => state.book.pageNum);
+  // const totalPage = useSelector((state) => state.book.totalPage);
+  // const limit = useSelector((state) => state.book.limit);
+  // const loading = useSelector((state) => state.common.loading);
+  // const errorMessage = useSelector((state) => state.common.errorMessage);
+
+  const navigate = useNavigate();
 
   const handleClickBook = (bookId) => {
     navigate(`/books/${bookId}`);
   };
 
   const removeBook = (bookId) => {
-    setRemovedBookId(bookId);
+    if (!bookId) return;
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        await api.delete(`/favorites/${bookId}`);
+
+        toast.success("The book has been removed");
+        const response = await api.get(`/favorites`);
+        dispatch(setBooks(response.data));
+      } catch (error) {
+        toast(error.message);
+      }
+      setLoading(false);
+    };
+    fetchData();
+  };
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get(`/favorites`);
+      dispatch(setBooks(res.data));
+    } catch (error) {
+      toast(error.message);
+    }
+    setLoading(false);
   };
 
   useEffect(() => {
-    if (removedBookId) return;
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const res = await api.get(`/favorites`);
-        setBooks(res.data);
-      } catch (error) {
-        toast(error.message);
-      }
-      setLoading(false);
-    };
     fetchData();
-  }, [removedBookId]);
-
-  useEffect(() => {
-    if (!removedBookId) return;
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        await api.delete(`/favorites/${removedBookId}`);
-        toast.success("The book has been removed");
-        setRemovedBookId("");
-      } catch (error) {
-        toast(error.message);
-      }
-      setLoading(false);
-    };
-    fetchData();
-  }, [removedBookId]);
+  }, []);
 
   return (
     <Container>
-      <Typography variant="h3" sx={{ textAlign: "center" }} m={3}>Book Store</Typography>
+      <Typography variant="h3" sx={{ textAlign: "center" }} m={3}>
+        Book Store
+      </Typography>
       {loading ? (
-        <Box sx={{ textAlign: "center", color: "primary.main" }} >
+        <Box sx={{ textAlign: "center", color: "primary.main" }}>
           <ClipLoader color="inherit" size={150} loading={true} />
         </Box>
       ) : (
-        <Stack direction="row" spacing={2} justifyContent="space-around" flexWrap={"wrap"}>
+        <Stack
+          direction="row"
+          spacing={2}
+          justifyContent="space-around"
+          flexWrap={"wrap"}
+        >
           {books.map((book) => (
             <Card
               key={book.id}
@@ -68,7 +95,8 @@ const ReadingPage = () => {
                 width: "12rem",
                 height: "27rem",
                 marginBottom: "2rem",
-              }}>
+              }}
+            >
               <CardActionArea>
                 <CardMedia
                   component="img"
@@ -85,9 +113,13 @@ const ReadingPage = () => {
                   </Typography>
                   <Button
                     sx={{
-                      position: "absolute", top: "5px", right: "5px",
-                      backgroundColor: "secondary.light", color: "secondary.contrastText",
-                      padding: "0", minWidth: "1.5rem"
+                      position: "absolute",
+                      top: "5px",
+                      right: "5px",
+                      backgroundColor: "secondary.light",
+                      color: "secondary.contrastText",
+                      padding: "0",
+                      minWidth: "1.5rem",
                     }}
                     size="small"
                     onClick={() => removeBook(book.id)}
@@ -95,13 +127,12 @@ const ReadingPage = () => {
                     &times;
                   </Button>
                 </CardContent>
-
               </CardActionArea>
             </Card>
           ))}
         </Stack>
       )}
-    </Container >
+    </Container>
   );
 };
 
