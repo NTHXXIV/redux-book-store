@@ -18,7 +18,7 @@ import {
   CardContent,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
-import { setBooks, setPageNum, setTotalPage } from "../redux/book/slice";
+import { setBooks, setPageNum } from "../redux/book/slice";
 import { setLoading, setErrorMessage } from "../redux/common/slice";
 
 const BACKEND_API = process.env.REACT_APP_BACKEND_API;

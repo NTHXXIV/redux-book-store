@@ -1,30 +1,14 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import api from "../../apiService";
+import { createSlice } from "@reduxjs/toolkit";
 
-// const fetchData = async () => {
-//   dispatch(setLoading(true));
-//   try {
+// export const getBooksData = createAsyncThunk(
+//   "book/setBooks",
+//   async ({ pageNum, limit, query }) => {
 //     let url = `/books?_page=${pageNum}&_limit=${limit}`;
 //     if (query) url += `&q=${query}`;
-//     const res = await api.get(url);
-//     dispatch(setBooks(res.data));
-
-//     dispatch(setErrorMessage(""));
-//   } catch (error) {
-//     dispatch(setErrorMessage(error.message));
+//     const response = await api.get(url);
+//     return response.data;
 //   }
-//   dispatch(setLoading(false));
-// };
-
-export const getBooksData = createAsyncThunk(
-  "book/setBooks",
-  async ({ pageNum, limit, query }) => {
-    let url = `/books?_page=${pageNum}&_limit=${limit}`;
-    if (query) url += `&q=${query}`;
-    const response = await api.get(url);
-    return response.data;
-  }
-);
+// );
 
 const initialState = {
   books: [],
@@ -54,17 +38,17 @@ export const bookSlice = createSlice({
       state.totalPage = action.payload;
     },
   },
-  extraReducers: (builder) => {
-    // --- Xử lý trong reducer với case pending / fulfilled / rejected ---
-    builder
-      .addCase(getBooksData.pending, (state) => {
-        state.status = "loading";
-      })
-      .addCase(getBooksData.fulfilled, (state, action) => {
-        state.status = "idle";
-        state.books = action.payload;
-      });
-  },
+  // extraReducers: (builder) => {
+  //   // --- Xử lý trong reducer với case pending / fulfilled / rejected ---
+  //   builder
+  //     .addCase(getBooksData.pending, (state) => {
+  //       state.status = "loading";
+  //     })
+  //     .addCase(getBooksData.fulfilled, (state, action) => {
+  //       state.status = "idle";
+  //       state.books = action.payload;
+  //     });
+  // },
 });
 const { actions, reducer } = bookSlice;
 export const { setBooks, setPageNum, setTotalPage, setBook } = actions;
